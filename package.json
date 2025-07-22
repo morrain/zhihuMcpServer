@@ -1,0 +1,48 @@
+{
+    "name": "puppeteer-mcp-server",
+    "version": "0.2.0",
+    "description": "MCP Server for scraping webpages and converting to markdown",
+    "main": "build/index.js",
+    "type": "module",
+    "bin": {
+      "puppeteer-mcp-server": "./build/index.js"
+    },
+    "scripts": {
+      "build": "tsc && chmod 755 build/index.js",
+      "start": "node build/index.js",
+      "dev": "npm run build && npm start"
+    },
+    "files": [
+      "build"
+    ],
+    "keywords": [
+      "mcp",
+      "puppeteer",
+      "web-scraper",
+      "markdown"
+    ],
+    "author": "Denis Jannot",
+    "license": "Apache-2.0",
+    "dependencies": {
+      "@modelcontextprotocol/sdk": "^1.9.0",
+      "@mozilla/readability": "^0.5.0",
+      "dotenv": "^16.4.7",
+      "express": "^5.1.0",
+      "jsdom": "^24.0.0",
+      
+      "puppeteer": "^22.3.0",
+      "puppeteer-extra": "^3.3.6",
+      "puppeteer-extra-plugin-stealth": "^2.11.2",
+      "sanitize-html": "^2.13.0",
+      "turndown": "^7.1.2",
+      "zod": "^3.24.2"
+    },
+    "devDependencies": {
+      "@types/express": "^5.0.1",
+      "@types/jsdom": "^21.1.6",
+      "@types/node": "^22.14.0",
+      "@types/sanitize-html": "^2.9.5",
+      "@types/turndown": "^5.0.4",
+      "typescript": "^5.4.2"
+    }
+  }
