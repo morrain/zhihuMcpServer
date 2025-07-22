@@ -1,5 +1,5 @@
 # Use the official Node.js Alpine image as a base.
-FROM node:22-alpine3.21
+FROM node:22-alpine
 
 # Install necessary dependencies for Puppeteer on Alpine.
 # We install chromium manually, so we'll tell Puppeteer to skip its own download.
