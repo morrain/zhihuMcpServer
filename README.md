@@ -155,6 +155,46 @@ The system uses a simple rule-based approach to handle common website interrupti
 ### Content Extraction
 After interactions, Mozilla's Readability extracts the main content, which is then sanitized and converted to Markdown using Turndown with custom rules for code blocks and tables.
 
+## Docker
+
+This project includes a `Dockerfile` to build and run the server in a containerized environment.
+
+### Building the Docker Image
+
+From the project root directory, run:
+
+```bash
+docker build -t puppeteer-mcp-server .
+```
+
+### Running the Docker Container
+
+To run the server inside a Docker container, use the following command. You can pass environment variables using the `-e` flag.
+
+```bash
+docker run -it --rm \
+  -e TRANSPORT_TYPE=http \
+  -e PORT=3001 \
+  -p 3001:3001 \
+  puppeteer-mcp-server
+```
+
+### Docker Environment Variables
+
+When running the server in a Docker container, you can configure it with the following environment variables:
+
+- **`TRANSPORT_TYPE`**: (Optional) The transport protocol to use.
+  - **Options**: `stdio` (default), `sse`, `http`.
+  - **Example**: `-e TRANSPORT_TYPE=http`
+- **`PORT`**: (Optional) The port for the HTTP server in `sse` or `http` mode. You must also map this port using the `-p` flag in the `docker run` command.
+  - **Default**: `3001`.
+  - **Example**: `-e PORT=8080 -p 8080:8080`
+- **`DISABLE_HEADLESS`**: (Optional) Set to `true` to run the browser in visible mode. **Note:** This is primarily for debugging and may require additional X11 forwarding configuration to work correctly with Docker.
+  - **Default**: `false` (browser runs in headless mode).
+  - **Example**: `-e DISABLE_HEADLESS=true`
+- **`COOKIE`**: (Optional) A string containing cookies to be set for the browser session. This is useful for accessing content that requires authentication.
+  - **Example**: `-e COOKIE="your_cookie_string_here"`
+
 ## Installation & Development (for Modifying the Code)
 
 If you wish to contribute, modify the server, or run a local development version:

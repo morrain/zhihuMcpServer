@@ -22,7 +22,7 @@ interface HotQuestionResult {
 export async function getHotQuestion({ url }: { url: string }): Promise<HotQuestionResult> {
   const browser = await puppeteerExtra.launch({
     headless: config.headless ? "new" : false,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
   });
 
   try {

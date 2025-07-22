@@ -27,7 +27,8 @@ export async function visitWebPage({
   // Launch puppeteer with stealth plugin and respect headless configuration
   const browser = await puppeteerExtra.launch({
     headless: config.headless ? "new" : false, // Use config.headless setting
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+    dumpio: true, // Enable verbose logging from the browser
   });
   
   try {
