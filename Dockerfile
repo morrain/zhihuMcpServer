@@ -1,37 +1,20 @@
-# Use the official Node.js Alpine image as a base.
-FROM node:22-alpine
+# Use the official Puppeteer image which comes with Node.js and browser dependencies.
+FROM ghcr.io/puppeteer/puppeteer:22.10.0
 
-# Install necessary dependencies for Puppeteer on Alpine.
-# We install chromium manually, so we'll tell Puppeteer to skip its own download.
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    udev
+# The image has a `pptruser` user and the workdir is /home/pptruser.
+# We are root by default during build, which is needed for `COPY --chown`.
 
-# Tell Puppeteer to use the system-installed Chromium.
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-# Create a non-root user and a home directory.
-RUN addgroup -S pptruser && adduser -S -G pptruser pptruser
-ENV HOME=/home/pptruser
-WORKDIR ${HOME}
-
-# Copy package files and set ownership.
+# Copy package files and set ownership for the pptruser.
 COPY --chown=pptruser:pptruser package*.json ./
 
-# Switch to the non-root user before installing dependencies.
+# Switch to the non-root user before installing dependencies for security.
 USER pptruser
 
-# Install dependencies.
+# Install dependencies. This will create node_modules owned by pptruser.
 RUN npm install
 
 # Copy the rest of your application source code.
-# The user is already pptruser, so no need for --chown
+# This is done as pptruser, into pptruser's home directory.
 COPY . .
 
 # Compile the TypeScript source code.
