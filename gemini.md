@@ -1,6 +1,6 @@
 ### GEMINI.md - System Prompt for gemini-cli
 
-This document provides instructions and context for the AI assistant (`gemini-cli`) working on the `puppeteer-mcp-server` project.
+This document provides instructions and context for the AI assistant (`gemini-cli`) working on the `zhihu-mcp-server` project.
 
 ---
 
@@ -27,9 +27,11 @@ When modifying or adding code, adhere to the patterns and libraries already in u
 
 - **`src/index.ts`**: The main entry point. It initializes `dotenv` and starts the MCP server.
 - **`src/server/mcp-server.ts`**: Creates the `McpServer` instance and orchestrates the setup of tools and transports.
-- **`src/server/tools.ts`**: **This is where the `scrape-webpage` tool is defined.** To modify the tool's parameters (using `zod`) or its core implementation, edit this file.
+- **`src/server/tools.ts`**: **This is where the `scrape-webpage`, `get-hot-question`, and `publish-answer` tools are defined.** To modify the tool's parameters (using `zod`) or its core implementation, edit this file.
 - **`src/server/transports.ts`**: Configures the communication layer (`stdio`, `sse`, or `http`) for the server.
-- **`src/scrapers/webpage-scraper.ts`**: Contains the main browser automation logic. The `visitWebPage` function launches Puppeteer, navigates to the URL, and calls the interaction and content processing modules.
+- **`src/scrapers/webpage-scraper.ts`**: Contains the main browser automation logic for the `scrape-webpage` tool.
+- **`src/scrapers/hot-question-scraper.ts`**: Contains the logic for the `get-hot-question` tool.
+- **`src/scrapers/answer-publisher.ts`**: Contains the logic for the `publish-answer` tool.
 - **`src/scrapers/content-processor.ts`**: Takes the raw HTML from Puppeteer, uses `Readability` to extract the main content, sanitizes it, and converts it to Markdown using `turndown`.
 - **`src/ai/page-interactions.ts`**: Implements the logic to handle basic page interactions by searching for keywords in buttons.
 - **`src/config.ts`**: Reads and exports all configuration from environment variables (`process.env`).

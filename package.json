@@ -1,11 +1,11 @@
 {
-    "name": "puppeteer-mcp-server",
+    "name": "zhihu-mcp-server",
     "version": "0.2.0",
     "description": "MCP Server for scraping webpages and converting to markdown",
     "main": "build/index.js",
     "type": "module",
     "bin": {
-      "puppeteer-mcp-server": "./build/index.js"
+      "zhihu-mcp-server": "./build/index.js"
     },
     "scripts": {
       "build": "tsc && chmod 755 build/index.js",
@@ -21,7 +21,7 @@
       "web-scraper",
       "markdown"
     ],
-    "author": "Denis Jannot",
+    "author": "morrain",
     "license": "Apache-2.0",
     "dependencies": {
       "@modelcontextprotocol/sdk": "^1.9.0",

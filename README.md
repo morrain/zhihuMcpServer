@@ -34,7 +34,7 @@ The recommended way to use this server is via `npx`, which ensures you're runnin
 3.  **Run the Server:**
     Open your terminal and run:
     ```bash
-    npx -y puppeteer-mcp-server
+    npx -y zhihu-mcp-server
     ```
     *   The `-y` flag automatically confirms any prompts from `npx`.
     *   This command will download (if not already cached) and execute the server.
@@ -49,7 +49,7 @@ This server is designed to be integrated as a tool within an MCP-compatible LLM 
   "mcpServers": {
     "web-scraper": {
       "command": "npx",
-      "args": ["-y", "puppeteer-mcp-server"],
+      "args": ["-y", "zhihu-mcp-server"],
       "env": {
         // Optional:
         // "TRANSPORT_TYPE": "stdio", // or "sse" or "http"
@@ -60,7 +60,7 @@ This server is designed to be integrated as a tool within an MCP-compatible LLM 
   }
 }
 ```
-When configured this way, the MCP orchestrator will manage the lifecycle of the `puppeteer-mcp-server` process.
+When configured this way, the MCP orchestrator will manage the lifecycle of the `zhihu-mcp-server` process.
 
 ## Environment Configuration Details
 
@@ -96,13 +96,34 @@ The server supports three communication modes:
 
 ## Tool Usage (MCP Invocation)
 
-The server provides a `scrape-webpage` tool.
+The server provides the following tools:
+
+### `scrape-webpage`
+
+Scrapes a webpage and returns its content as markdown.
 
 **Tool Parameters:**
 
 - `url` (string, required): The URL of the webpage to scrape.
 - `autoInteract` (boolean, optional, default: true): Whether to automatically handle interactive elements.
 - `waitForNetworkIdle` (boolean, optional, default: true): Whether to wait for network to be idle before processing.
+
+### `get-hot-question`
+
+Gets a hot question from the specified URL.
+
+**Tool Parameters:**
+
+- `url` (string, required): The URL of the page to find the hot question on.
+
+### `publish-answer`
+
+Publishes an answer to a question on the specified URL.
+
+**Tool Parameters:**
+
+- `url` (string, required): The URL of the question to answer.
+- `answer` (string, required): The answer to publish.
 
 **Response Format:**
 
@@ -164,7 +185,7 @@ This project includes a `Dockerfile` to build and run the server in a containeri
 From the project root directory, run:
 
 ```bash
-docker build -t puppeteer-mcp-server .
+docker build -t zhihu-mcp-server .
 ```
 
 ### Running the Docker Container
@@ -175,8 +196,9 @@ To run the server inside a Docker container, use the following command. You can 
 docker run -it --rm \
   -e TRANSPORT_TYPE=http \
   -e PORT=3001 \
+  -e COOKIE='your_cookie_string_here' \
   -p 3001:3001 \
-  puppeteer-mcp-server
+  zhihu-mcp-server
 ```
 
 ### Docker Environment Variables
