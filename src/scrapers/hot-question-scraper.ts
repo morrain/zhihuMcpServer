@@ -1,13 +1,6 @@
-import puppeteerExtraImport from 'puppeteer-extra';
-import StealthPluginImport from 'puppeteer-extra-plugin-stealth';
+import { getBrowser } from '../utils/browser-manager.js';
 import { config } from '../config.js';
-
-// Work around TypeScript issues with puppeteer-extra
-const puppeteerExtra = puppeteerExtraImport as any;
-const StealthPlugin = StealthPluginImport as any;
-
-// Apply stealth plugin
-puppeteerExtra.use(StealthPlugin());
+import { Page } from 'puppeteer';
 
 interface HotQuestionResult {
   data?: {
@@ -20,26 +13,31 @@ interface HotQuestionResult {
 }
 
 export async function getHotQuestion({ url }: { url: string }): Promise<HotQuestionResult> {
-  const browser = await puppeteerExtra.launch({
-    headless: config.headless ? "new" : false,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
-  });
-
+  let page: Page | null = null;
   try {
-    console.log(`Visiting hot question page: ${url}`);
-    const page = await browser.newPage();
+    const browser = await getBrowser();
+    page = await browser.newPage();
+
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+      if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) {
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
 
     if (config.cookie) {
-      console.log("Setting cookie...");
       const cookies = config.cookie.split(';').map(cookie => {
         const [name, ...value] = cookie.trim().split('=');
-        return { name, value: value.join('='), url };
+        return { name: name || '', value: value.join('='), url };
       });
       await page.setCookie(...cookies);
     }
 
     await page.setViewport({ width: 1280, height: 800 });
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    console.log(`Navigating to hot question page: ${url}`);
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     const questionData = await page.evaluate(() => {
@@ -82,7 +80,6 @@ export async function getHotQuestion({ url }: { url: string }): Promise<HotQuest
       return null; // Return null if no matching structure was found
     });
 
-    await browser.close();
 
     if (questionData) {
       console.log(`Found hot question: ${questionData.name}`);
@@ -92,13 +89,13 @@ export async function getHotQuestion({ url }: { url: string }): Promise<HotQuest
     }
 
   } catch (error) {
-    await browser.close();
-    if (error instanceof Error) {
-      console.error(`Error getting hot question from ${url}:`, error.message);
-      return { error: { message: error.message } };
-    } else {
-      console.error(`Unknown error getting hot question from ${url}`);
-      return { error: { message: "An unknown error occurred" } };
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error(`Error getting hot question from ${url}:`, message);
+    return { error: { message } };
+  } finally {
+    if (page) {
+      await page.close();
     }
   }
 }
+

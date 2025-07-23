@@ -1,13 +1,6 @@
-import puppeteerExtraImport from "puppeteer-extra";
-import StealthPluginImport from "puppeteer-extra-plugin-stealth";
-import { executablePath } from "puppeteer";
+import { getBrowser } from "../utils/browser-manager.js";
 import { config } from "../config.js";
-
-// Work around TypeScript issues with puppeteer-extra
-const puppeteerExtra = puppeteerExtraImport as any;
-const StealthPlugin = StealthPluginImport as any;
-
-puppeteerExtra.use(StealthPlugin());
+import { Page } from 'puppeteer';
 
 interface PublishAnswerParams {
   url: string;
@@ -18,31 +11,35 @@ export async function publishAnswer({
   url,
   answer,
 }: PublishAnswerParams): Promise<{ success: boolean; error?: string }> {
-  const browser = await puppeteerExtra.launch({
-    headless: config.headless,
-    executablePath: executablePath(),
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
-  });
-
+  let page: Page | null = null;
   try {
-    const page = await browser.newPage();
+    const browser = await getBrowser();
+    page = await browser.newPage();
+
+    // await page.setRequestInterception(true);
+    // page.on('request', (req) => {
+    //   if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) {
+    //     req.abort();
+    //   } else {
+    //     req.continue();
+    //   }
+    // });
 
     if (config.cookie) {
-      console.log("Setting cookie...");
       const cookies = config.cookie.split(";").map((cookie: string) => {
         const [name, ...value] = cookie.trim().split("=");
-        return { name, value: value.join("="), url };
+        return { name: name || '', value: value.join("="), url };
       });
       await page.setCookie(...cookies);
     }
     await page.setViewport({ width: 1280, height: 800 });
-    await page.goto(url, { waitUntil: "networkidle2" });
-
+    console.log(`Navigating to answer page: ${url}`);
+    await page.goto(url, { waitUntil: "domcontentloaded" });
     // Wait for the editor to be ready and type the answer
     const editorSelector = ".public-DraftEditor-content";
     await page.waitForSelector(editorSelector);
     await page.click(editorSelector);
-    await page.keyboard.type(answer, { delay: 120 });
+    await page.keyboard.type(answer, { delay: 30 });
 
     // Find and click the publish button
     const buttonSelector = ".is-bottom button.Button--primary";
@@ -55,13 +52,16 @@ export async function publishAnswer({
     }
 
     // Wait for navigation to complete after publishing
-    await page.waitForNavigation({ waitUntil: "networkidle2" });
+    await page.waitForNavigation({ waitUntil: "domcontentloaded" });
 
     return { success: true };
   } catch (error: any) {
     console.error(`Error in publishAnswer: ${error.message}`);
     return { success: false, error: error.message };
   } finally {
-    await browser.close();
+    if (page) {
+      await page.close();
+    }
   }
 }
+

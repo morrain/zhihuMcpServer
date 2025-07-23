@@ -15,16 +15,14 @@ export function registerTools(server: McpServer): void {
     {
       url: z.string().url().describe("The URL of the webpage to scrape"),
       autoInteract: z.boolean().optional().default(true).describe("Whether to automatically handle interactive elements like cookies, captchas, etc."),
-      waitForNetworkIdle: z.boolean().optional().default(true).describe("Whether to wait for network to be idle before processing")
     },
-    async ({ url, autoInteract, waitForNetworkIdle }, _extra) => {
+    async ({ url, autoInteract }, _extra) => {
       console.log(`Received scrape request for URL: ${url}, autoInteract: ${autoInteract}`);
 
       try {
         const result = await visitWebPage({ 
           url, 
           autoInteract, 
-          waitForNetworkIdle
         });
 
         if (result.error) {
