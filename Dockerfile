@@ -1,5 +1,5 @@
 # Use the official Puppeteer image which comes with Node.js and browser dependencies.
-FROM ghcr.io/puppeteer/puppeteer:22.10.0
+FROM ghcr.nju.edu.cn/puppeteer/puppeteer:22.10.0
 
 # The image has a `pptruser` user and the workdir is /home/pptruser.
 # We are root by default during build, which is needed for `COPY --chown`.
