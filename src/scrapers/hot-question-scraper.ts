@@ -67,7 +67,20 @@ export async function getHotQuestion({ url }: { url: string }): Promise<HotQuest
         const questionLink = container.querySelector('a[href*="/question/"]:not([href*="?write"])');
 
         if (questionLink) {
-          const name = questionLink.textContent?.trim();
+          // Clone the node to avoid modifying the live DOM.
+          const clone = questionLink.cloneNode(true) as HTMLElement;
+
+          // The tag is usually a div inside the first div of the link.
+          // We remove it to get only the question text, based on structure, not class.
+          const mainContainer = clone.querySelector('div');
+          if (mainContainer) {
+            const tagElement = mainContainer.querySelector('div');
+            if (tagElement) {
+              tagElement.remove();
+            }
+          }
+
+          const name = clone.textContent?.trim();
 
           // Check if we found a valid name and URL.
           if (name && name.length > 5) { // Basic validation for title length
