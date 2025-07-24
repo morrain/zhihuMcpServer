@@ -26,6 +26,11 @@ export async function getHotQuestion({ url }: { url: string }): Promise<HotQuest
         req.continue();
       }
     });
+    // 监听 console 事件
+    page.on('console', async (msg) => {
+      const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+      console.log('[浏览器输出]', ...args);
+    });
 
     if (config.cookie) {
       const cookies = config.cookie.split(';').map(cookie => {
@@ -38,13 +43,14 @@ export async function getHotQuestion({ url }: { url: string }): Promise<HotQuest
     await page.setViewport({ width: 1280, height: 800 });
     console.log(`Navigating to hot question page: ${url}`);
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     const questionData = await page.evaluate(() => {
       // Find all elements containing the text "写回答"
       const writeButtons = Array.from(document.querySelectorAll('button, a')).filter(el => el.textContent?.trim().includes('写回答'));
 
       if (writeButtons.length === 0) {
+        console.log(`not found '写回答'。 document: ${document.body.innerHTML}`)
         return null;
       }
 

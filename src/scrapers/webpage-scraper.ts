@@ -41,13 +41,14 @@ export async function visitWebPage({
 
     console.log(`Navigating to ${url}...`);
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-
+    await new Promise(resolve => setTimeout(resolve, 3000));
     if (autoInteract) {
       console.log("Handling page interactions...");
       await handlePageInteractions(page!);
     }
 
     const htmlContent = await page!.evaluate(() => document.body.innerHTML);
+    console.log(`htmlContent: ${htmlContent}`);
     const markdown = await processHtmlContent(htmlContent);
 
     console.log(`Successfully scraped and converted: ${url}`);
