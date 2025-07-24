@@ -185,7 +185,7 @@ This project includes a `Dockerfile` to build and run the server in a containeri
 From the project root directory, run:
 
 ```bash
-docker build -t zhihu-mcp-server .
+docker build -t zhihu-mcp-server:lastest .
 ```
 
 ### Running the Docker Container
@@ -193,12 +193,20 @@ docker build -t zhihu-mcp-server .
 To run the server inside a Docker container, use the following command. You can pass environment variables using the `-e` flag.
 
 ```bash
+// 临时调试，交互式运行
 docker run -it --rm \
   -e TRANSPORT_TYPE=http \
   -e PORT=3001 \
   -e COOKIE='your_cookie_string_here' \
   -p 3001:3001 \
-  zhihu-mcp-server
+  zhihu-mcp-server:lastest
+// 
+docker run -d \
+  -e TRANSPORT_TYPE=http \
+  -e PORT=3001 \
+  -e COOKIE='your_cookie_string_here' \
+  -p 3001:3001 \
+  zhihu-mcp-server:lastest
 ```
 
 ### Docker Environment Variables
