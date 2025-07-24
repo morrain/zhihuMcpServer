@@ -42,8 +42,7 @@ export async function getHotQuestion({ url }: { url: string }): Promise<HotQuest
 
     await page.setViewport({ width: 1280, height: 800 });
     console.log(`Navigating to hot question page: ${url}`);
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await page.goto(url, { waitUntil: 'networkidle2' });
 
     const questionData = await page.evaluate(() => {
       // Find all elements containing the text "写回答"

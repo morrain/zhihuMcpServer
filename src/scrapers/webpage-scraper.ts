@@ -40,8 +40,7 @@ export async function visitWebPage({
     await page.setViewport({ width: 1280, height: 800 });
 
     console.log(`Navigating to ${url}...`);
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await page.goto(url, { waitUntil: 'networkidle2' });
     if (autoInteract) {
       console.log("Handling page interactions...");
       await handlePageInteractions(page!);
