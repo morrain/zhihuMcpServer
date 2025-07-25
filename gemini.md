@@ -23,17 +23,29 @@ When modifying or adding code, adhere to the patterns and libraries already in u
 - **Configuration**: `dotenv` for managing environment variables from a `.env` file.
 - **Schema Validation**: `zod` for defining the schema of the `scrape-webpage` tool.
 
+### Key Concepts
+
+- **Browser Management**: The application uses a single, shared Puppeteer browser instance, managed by `src/utils/browser-manager.ts`. This avoids the overhead of launching a new browser for each request.
+- **Scraping Process**: When a scrape request is received, the server opens a new page in the shared browser, navigates to the URL, and then uses `src/ai/page-interactions.ts` to handle cookie banners and other pop-ups.
+- **Content Extraction**: Once the page is loaded, `src/scrapers/content-processor.ts` uses the `@mozilla/readability` library to extract the main article content, removing ads, sidebars, and other clutter.
+- **Markdown Conversion**: The cleaned HTML is then converted to Markdown using the `turndown` library.
+
 ### Project Structure and Key Files
 
 - **`src/index.ts`**: The main entry point. It initializes `dotenv` and starts the MCP server.
 - **`src/server/mcp-server.ts`**: Creates the `McpServer` instance and orchestrates the setup of tools and transports.
-- **`src/server/tools.ts`**: **This is where the `scrape-webpage`, `get-hot-question`, and `publish-answer` tools are defined.** To modify the tool's parameters (using `zod`) or its core implementation, edit this file.
+- **`src/server/tools.ts`**: **This is where the `login-with-qrcode`, `scrape-webpage`, `get-hot-question`, and `publish-answer` tools are defined.** To modify the tool's parameters (using `zod`) or its core implementation, edit this file.
 - **`src/server/transports.ts`**: Configures the communication layer (`stdio`, `sse`, or `http`) for the server.
 - **`src/scrapers/webpage-scraper.ts`**: Contains the main browser automation logic for the `scrape-webpage` tool.
+- **`src/scrapers/login-scraper.ts`**: Contains the logic for the `login-with-qrcode` tool.
 - **`src/scrapers/hot-question-scraper.ts`**: Contains the logic for the `get-hot-question` tool.
 - **`src/scrapers/answer-publisher.ts`**: Contains the logic for the `publish-answer` tool.
 - **`src/scrapers/content-processor.ts`**: Takes the raw HTML from Puppeteer, uses `Readability` to extract the main content, sanitizes it, and converts it to Markdown using `turndown`.
 - **`src/ai/page-interactions.ts`**: Implements the logic to handle basic page interactions by searching for keywords in buttons.
+- **`src/utils/browser-manager.ts`**: Manages the Puppeteer browser instance, including launch and close operations.
+- **`src/utils/cookie-manager.ts`**: Handles loading and saving cookies for the browser sessions.
+- **`src/utils/html-helpers.ts`**: Provides helper functions for working with HTML content.
+- **`src/utils/markdown-formatters.ts`**: Contains functions for formatting content into Markdown.
 - **`src/config.ts`**: Reads and exports all configuration from environment variables (`process.env`).
 - **`package.json`**: Defines all dependencies and scripts. Use this to understand available commands.
 - **`tsconfig.json`**: TypeScript compiler options. The output directory is `build/`.
@@ -41,7 +53,7 @@ When modifying or adding code, adhere to the patterns and libraries already in u
 ### Common Commands
 
 - **Install dependencies**: `npm install`
-- **Compile TypeScript**: `npm run build` (compiles `src/` to `build/`)
+- **Compile TypeScript**: `npm run build` (compiles `src/` to `build/` and makes the output script executable).
 - **Run the server (after building)**: `npm start`
 - **Develop (auto-rebuild and run)**: `npm run dev`
 
@@ -50,9 +62,10 @@ When modifying or adding code, adhere to the patterns and libraries already in u
 When asked to modify the project:
 
 1.  Make changes to the relevant `.ts` files in the `src/` directory.
-2.  After making changes, you **must** re-compile the project by running the build command.
+2.  When modifying the code, check if the `README.md` needs to be updated. If so, update it.
+3.  After making changes, you **must** re-compile the project by running the build command.
     - **Command**: `npm run build`
-3.  To test the changes, run the server.
+4.  To test the changes, run the server.
     - **Command**: `npm start`
 
 ### Configuration
