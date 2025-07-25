@@ -10,7 +10,7 @@ This Model Context Protocol (MCP) server provides a tool for scraping webpages a
 - Uses a rule-based system to automatically handle common pop-ups (e.g., cookie consent banners).
 - Extracts main content with Mozilla's Readability
 - Converts HTML to well-formatted Markdown
-- Special handling for code blocks, tables, and other structured content
+- Handles authentication via a QR code login flow, automatically persisting sessions.
 - Accessible via the Model Context Protocol
 - Option to view browser interaction in real-time by disabling headless mode
 - Easily consumable as an `npx` package.
@@ -39,6 +39,18 @@ The recommended way to use this server is via `npx`, which ensures you're runnin
     *   The `-y` flag automatically confirms any prompts from `npx`.
     *   This command will download (if not already cached) and execute the server.
     *   By default, it starts in `stdio` mode. Set `TRANSPORT_TYPE=sse` or `TRANSPORT_TYPE=http` for HTTP server modes.
+
+## Authentication
+
+For tools that require you to be logged in (like `publish-answer`), this server uses a cookie-based authentication flow. You no longer need to provide a `COOKIE` environment variable.
+
+The process is as follows:
+1.  **Login**: Call the `login-with-qrcode` tool. This will return a QR code.
+2.  **Scan**: Scan the QR code with the appropriate mobile app (e.g., Zhihu) to log in.
+3.  **Session Saved**: Once you log in, the server automatically saves the session cookies to a local file (`qrcodes/cookies.json`).
+4.  **Automatic Authentication**: All subsequent requests from tools like `scrape-webpage`, `get-hot-question`, and `publish-answer` will automatically use these saved cookies to authenticate your session.
+
+This means you only need to log in once, and your session will be reused until the cookies expire.
 
 ## Using as an MCP Tool with NPX
 
@@ -106,7 +118,7 @@ Scrapes a webpage and returns its content as markdown.
 
 - `url` (string, required): The URL of the webpage to scrape.
 - `autoInteract` (boolean, optional, default: true): Whether to automatically handle interactive elements.
-- `waitForNetworkIdle` (boolean, optional, default: true): Whether to wait for network to be idle before processing.
+
 
 ### `get-hot-question`
 
@@ -125,7 +137,16 @@ Publishes an answer to a question on the specified URL.
 - `url` (string, required): The URL of the question to answer.
 - `answer` (string, required): The answer to publish.
 
-**Response Format:**
+### `login-with-qrcode`
+
+Gets a login QR code from the specified URL.
+
+**Tool Parameters:**
+
+- `qrSelector` (string, optional): The CSS selector for the QR code element. Defaults to `.Qrcode-qrcode`.
+- `switchQrSelector` (string, optional): The CSS selector for the button to switch to QR code login.
+
+**Response Format:**''
 
 The tool returns its result in a structured format:
 
@@ -185,31 +206,34 @@ This project includes a `Dockerfile` to build and run the server in a containeri
 From the project root directory, run:
 
 ```bash
-docker build -t zhihu-mcp-server:lastest .
+docker build -t zhihu-mcp-server:latest .
 ```
 
 ### Running the Docker Container
 
 To run the server inside a Docker container, use the following command. You can pass environment variables using the `-e` flag.
 
+To get the login QR code and persist the session, you need to mount a volume to the container. This ensures the `qrcodes/cookies.json` file is saved on your host machine.
+
 ```bash
 // 临时调试，交互式运行
 docker run -it --rm \
   -e TRANSPORT_TYPE=http \
   -e PORT=3001 \
-  -e COOKIE='your_cookie_string_here' \
+  -v $(pwd)/qrcodes:/home/pptruser/qrcodes \
   -p 3001:3001 \
-  zhihu-mcp-server:lastest
+  zhihu-mcp-server:latest
 // 
 docker run -d \
+  -v $(pwd)/qrcodes:/home/pptruser/qrcodes \
   -e TRANSPORT_TYPE=http \
   -e PORT=3001 \
-  -e COOKIE='your_cookie_string_here' \
   -p 3001:3001 \
-  zhihu-mcp-server:lastest
+  zhihu-mcp-server:latest
 ```
 
 ### Docker Environment Variables
+
 
 When running the server in a Docker container, you can configure it with the following environment variables:
 
@@ -222,8 +246,7 @@ When running the server in a Docker container, you can configure it with the fol
 - **`DISABLE_HEADLESS`**: (Optional) Set to `true` to run the browser in visible mode. **Note:** This is primarily for debugging and may require additional X11 forwarding configuration to work correctly with Docker.
   - **Default**: `false` (browser runs in headless mode).
   - **Example**: `-e DISABLE_HEADLESS=true`
-- **`COOKIE`**: (Optional) A string containing cookies to be set for the browser session. This is useful for accessing content that requires authentication.
-  - **Example**: `-e COOKIE="your_cookie_string_here"`
+
 
 ## Installation & Development (for Modifying the Code)
 

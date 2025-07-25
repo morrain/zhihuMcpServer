@@ -3,12 +3,33 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { visitWebPage } from '../scrapers/webpage-scraper.js';
 import { getHotQuestion } from '../scrapers/hot-question-scraper.js';
 import { publishAnswer } from '../scrapers/answer-publisher.js';
+import { getLoginQrCode } from '../scrapers/login-scraper.js';
 
 /**
  * Registers MCP tools with the server
  * @param server The MCP server instance
  */
 export function registerTools(server: McpServer): void {
+  server.tool(
+    "login-with-qrcode",
+    "访问知乎登陆页面,并获取二维码",
+    {
+      qrSelector: z.string().optional().describe('The CSS selector for the QR code element'),
+      switchQrSelector: z.string().optional().describe('The CSS selector for the button to switch to QR code login'),
+    },
+    async ({ qrSelector, switchQrSelector }, _extra) => {
+      console.log(`Received login-with-qrcode request`);
+
+      try {
+        const result = await getLoginQrCode(qrSelector, switchQrSelector);
+        return createSuccessResponse(result, "QR code generated successfully");
+      } catch (error: any) {
+        console.error("Error processing 'login-with-qrcode' tool:", error);
+        return createErrorResponse(`Error getting login QR code: ${error.message}`);
+      }
+    }
+  );
+
   server.tool(
     "scrape-webpage",
     "访问页面，提取页面内容并转化为 markdown 格式",

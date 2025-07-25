@@ -17,6 +17,10 @@ RUN npm install
 # This is done as pptruser, into pptruser's home directory.
 COPY . .
 
+# Create a directory for QR codes and declare it as a volume
+RUN mkdir -p qrcodes
+VOLUME /home/pptruser/qrcodes
+
 # Compile the TypeScript source code.
 RUN npm run build
 

@@ -9,7 +9,7 @@ export const config = {
   useSSE: process.env.USE_SSE === 'true',
   transportType: process.env.TRANSPORT_TYPE || (process.env.USE_SSE === 'true' ? 'sse' : 'stdio'), // 'stdio', 'sse', or 'http'
   headless: process.env.DISABLE_HEADLESS !== 'true', // Default to headless mode unless explicitly disabled
-  cookie: process.env.COOKIE, // Add cookie configuration
+  
 };
 
 // Validate transport type

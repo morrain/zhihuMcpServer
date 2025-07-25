@@ -3,7 +3,7 @@ import { getBrowser } from '../utils/browser-manager.js';
 import { handlePageInteractions } from '../ai/page-interactions.js';
 import { processHtmlContent } from './content-processor.js';
 import { ScrapeResult, WebpageScrapeOptions } from '../types/index.js';
-import { config } from '../config.js';
+import { setCookiesOnPage } from '../utils/cookie-manager.js';
 import { Page } from 'puppeteer';
 
 /**
@@ -29,13 +29,7 @@ export async function visitWebPage({
       }
     });
 
-    if (config.cookie) {
-      const cookies = config.cookie.split(';').map(cookie => {
-        const [name, ...value] = cookie.trim().split('=');
-        return { name: name || '', value: value.join('='), url };
-      });
-      await page.setCookie(...cookies);
-    }
+    await setCookiesOnPage(page);
 
     await page.setViewport({ width: 1280, height: 800 });
 
