@@ -1,25 +1,26 @@
 # Use the official Puppeteer image which comes with Node.js and browser dependencies.
 FROM ghcr.nju.edu.cn/puppeteer/puppeteer:22.10.0
 
-# The image has a `pptruser` user and the workdir is /home/pptruser.
-# We are root by default during build, which is needed for `COPY --chown`.
+# Set working directory
+WORKDIR /home/pptruser
 
-# Copy package files and set ownership for the pptruser.
-COPY --chown=pptruser:pptruser package*.json ./
+# Copy package files
+COPY package*.json ./
 
-# Switch to the non-root user before installing dependencies for security.
-USER pptruser
-
-# Install dependencies. This will create node_modules owned by pptruser.
+# Install dependencies as root
 RUN npm install
 
 # Copy the rest of your application source code.
-# This is done as pptruser, into pptruser's home directory.
 COPY . .
 
-# Create a directory for QR codes and declare it as a volume
+# Create a directory for QR codes.
 RUN mkdir -p qrcodes
-VOLUME /home/pptruser/qrcodes
+
+# Change ownership of the entire application directory to pptruser
+RUN chown -R pptruser:pptruser /home/pptruser
+
+# Switch to the non-root user for security.
+USER pptruser
 
 # Compile the TypeScript source code.
 RUN npm run build
