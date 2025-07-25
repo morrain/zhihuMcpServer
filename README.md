@@ -217,15 +217,19 @@ To get the login QR code and persist the session, you need to mount a volume to 
 
 ```bash
 // 临时调试，交互式运行
+mkdir -p ./qrcodes && sudo chown 999:999 ./qrcodes && \
 docker run -it --rm \
+  --user 999:999 \
   -e TRANSPORT_TYPE=http \
   -e PORT=3001 \
   -v $(pwd)/qrcodes:/home/pptruser/qrcodes \
   -p 3001:3001 \
   zhihu-mcp-server:latest
+
 // 
+mkdir -p ./qrcodes && sudo chown 999:999 ./qrcodes && \
 docker run -d \
-  -v $(pwd)/qrcodes:/home/pptruser/qrcodes \
+  --user 999:999 \
   -e TRANSPORT_TYPE=http \
   -e PORT=3001 \
   -p 3001:3001 \
