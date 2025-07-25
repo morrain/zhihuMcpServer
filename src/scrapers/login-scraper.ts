@@ -22,7 +22,7 @@ async function handlePostLogin(page: Page): Promise<void> {
     try {
         console.log('Waiting for user to scan QR code to log in...');
         // Wait for navigation to complete after successful login
-        await page.waitForNavigation({ timeout: 60000, waitUntil: 'networkidle2' });
+        await page.waitForNavigation({ timeout: 60000, waitUntil: 'domcontentloaded' });
         console.log('Login successful. Saving cookies...');
 
         // Save cookies to a file
