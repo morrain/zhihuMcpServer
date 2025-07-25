@@ -28,7 +28,8 @@ export async function publishAnswer({
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
     console.log(`Navigating to answer page: ${url}`);
-    await page.goto(url, { waitUntil: "domcontentloaded" });
+    await page.goto(url, { waitUntil: "load" });
+    await new Promise(resolve => setTimeout(resolve, 3000));
     // Wait for the editor to be ready and type the answer
     const editorSelector = ".public-DraftEditor-content";
     await page.waitForSelector(editorSelector);

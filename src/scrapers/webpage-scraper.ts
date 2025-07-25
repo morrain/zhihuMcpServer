@@ -34,11 +34,12 @@ export async function visitWebPage({
     await page.setViewport({ width: 1280, height: 800 });
 
     console.log(`Navigating to ${url}`);
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: 'load' });
     if (autoInteract) {
       console.log("Handling page interactions...");
       await handlePageInteractions(page!);
     }
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     const htmlContent = await page!.evaluate(() => document.body.innerHTML);
     console.log(`htmlContent: ${htmlContent}`);
