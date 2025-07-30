@@ -23,6 +23,7 @@ export async function publishAnswer({
         req.url().includes("collector/web_json") ||
         req.url().includes("sc-critical?") ||
         req.url().includes("baidu.com/hm.gif") ||
+        req.url().includes("linksubmit/push.js") ||
         req.url().includes("picx.zhimg.com")
       ) {
         req.abort();
@@ -34,7 +35,7 @@ export async function publishAnswer({
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
     console.log(`Navigating to answer page: ${url}`);
-    await page.goto(url, { waitUntil: "load" });
+    await page.goto(url, { waitUntil: "load", timeout: 60000 });
     await new Promise((resolve) => setTimeout(resolve, 3000));
     // Wait for the editor to be ready and type the answer
     const editorSelector = ".public-DraftEditor-content";
