@@ -1,17 +1,20 @@
 # Use the official Puppeteer image which comes with Node.js and browser dependencies.
-FROM ghcr.nju.edu.cn/puppeteer/puppeteer:22.10.0
+FROM ghcr.nju.edu.cn/puppeteer/puppeteer:22.15.0
+USER root
+RUN npm install -g pnpm@10.11.0
+ENV PNPM_HOME="/pnpm"
 
 # The image has a `pptruser` user and the workdir is /home/pptruser.
 # We are root by default during build, which is needed for `COPY --chown`.
 
 # Copy package files and set ownership for the pptruser.
-COPY --chown=pptruser:pptruser package*.json ./
+COPY --chown=pptruser:pptruser package.json pnpm-lock.yaml ./
 
 # Switch to the non-root user before installing dependencies for security.
 USER pptruser
 
 # Install dependencies. This will create node_modules owned by pptruser.
-RUN npm install
+RUN pnpm install --frozen-lockfile --prod=false --registry https://registry.npmmirror.com/
 
 # Copy the rest of your application source code.
 # This is done as pptruser, into pptruser's home directory.
