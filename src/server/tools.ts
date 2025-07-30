@@ -12,10 +12,10 @@ import { getLoginQrCode } from '../scrapers/login-scraper.js';
 export function registerTools(server: McpServer): void {
   server.tool(
     "login-with-qrcode",
-    "访问知乎登陆页面,并获取二维码",
+    "访问知乎登陆页面，并获取二维码。",
     {
-      qrSelector: z.string().optional().describe('The CSS selector for the QR code element'),
-      switchQrSelector: z.string().optional().describe('The CSS selector for the button to switch to QR code login'),
+      qrSelector: z.string().optional().describe('用于提取二维码的HTML选择器，默认值:.Qrcode-qrcode。'),
+      switchQrSelector: z.string().optional().describe('切换成二维码登录方式对应的HTML选择器，默认为空。不为空时会操作点击切换成二维码登录方式。'),
     },
     async ({ qrSelector, switchQrSelector }, _extra) => {
       console.log(`Received login-with-qrcode request`);
@@ -32,10 +32,10 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     "scrape-webpage",
-    "访问页面，提取页面内容并转化为 markdown 格式",
+    "访问页面，提取页面内容并转化为 markdown 格式。",
     {
-      url: z.string().url().describe("The URL of the webpage to scrape"),
-      autoInteract: z.boolean().optional().default(true).describe("Whether to automatically handle interactive elements like cookies, captchas, etc."),
+      url: z.string().url().describe("要提取页面的URL。"),
+      autoInteract: z.boolean().optional().default(true).describe("是否自动自动点击页面加载时的弹框，譬如cookie设置弹框等。"),
     },
     async ({ url, autoInteract }, _extra) => {
       console.log(`Received scrape request for URL: ${url}, autoInteract: ${autoInteract}`);
@@ -72,15 +72,15 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     "get-hot-question",
-    "获取热点问题, get hot question",
+    "获取热点问题，可以获取小时榜、日榜、周榜。",
     {
-      url: z.string().url().optional().default('https://www.zhihu.com/creator/hot-question/hot/0/day').describe("The Page URL to find the hot question on"),
+      type: z.enum(['hour', 'day', 'week']).optional().default('day').describe("获取热点问题榜单的类型，如 'hour', 'day', or 'week'"),
     },
-    async ({ url }, _extra) => {
-      console.log(`Received get-hot-question request for URL: ${url}`);
+    async ({ type }, _extra) => {
+      console.log(`Received get-hot-question request for type: ${type}`);
 
       try {
-        const result = await getHotQuestion({ url });
+        const result = await getHotQuestion({ type });
 
         if (result.error) {
           return createErrorResponse(result.error.message);
@@ -109,8 +109,8 @@ export function registerTools(server: McpServer): void {
     "publish-answer",
     "发布回答, publish answer",
     {
-      url: z.string().url().describe("The Page URL of the question to answer"),
-      answer: z.string().describe("The answer to publish"),
+      url: z.string().url().describe("发布回答对应的页面地址。"),
+      answer: z.string().describe("回答的内容。"),
     },
     async ({ url, answer }, _extra) => {
       console.log(`Received publish-answer request for URL: ${url}`);

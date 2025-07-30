@@ -126,7 +126,7 @@ Gets a hot question from the specified URL.
 
 **Tool Parameters:**
 
-- `url` (string, required): The URL of the page to find the hot question on.
+- `type` (string, optional, default: `day`): The type of hot question list to get. Can be `hour`, `day`, or `week`.
 
 ### `publish-answer`
 

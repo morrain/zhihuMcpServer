@@ -12,7 +12,8 @@ interface HotQuestionResult {
   };
 }
 
-export async function getHotQuestion({ url = 'https://www.zhihu.com/creator/hot-question/hot/0/day' }: { url?: string } = {}): Promise<HotQuestionResult> {
+export async function getHotQuestion({ type = 'day' }: { type?: 'hour' | 'day' | 'week' } = {}): Promise<HotQuestionResult> {
+  const url = `https://www.zhihu.com/creator/hot-question/hot/0/${type}`;
   let page: Page | null = null;
   try {
     const browser = await getBrowser();
