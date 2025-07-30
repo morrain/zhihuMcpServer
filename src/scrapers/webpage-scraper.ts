@@ -1,10 +1,9 @@
-
-import { getBrowser } from '../utils/browser-manager.js';
-import { handlePageInteractions } from '../ai/page-interactions.js';
-import { processHtmlContent } from './content-processor.js';
-import { ScrapeResult, WebpageScrapeOptions } from '../types/index.js';
-import { setCookiesOnPage } from '../utils/cookie-manager.js';
-import { Page } from 'puppeteer';
+import { getBrowser } from "../utils/browser-manager.js";
+import { handlePageInteractions } from "../ai/page-interactions.js";
+import { processHtmlContent } from "./content-processor.js";
+import { ScrapeResult, WebpageScrapeOptions } from "../types/index.js";
+import { setCookiesOnPage } from "../utils/cookie-manager.js";
+import { Page } from "puppeteer";
 
 /**
  * Visits a webpage, handles interactions, and extracts content
@@ -22,7 +21,7 @@ export async function visitWebPage({
 
     await page.setRequestInterception(true);
     page.on('request', (req) => {
-      if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) {
+      if (['image', 'font', 'media'].includes(req.resourceType()) || req.url().includes('unpkg.zhimg.com') || req.url().includes('baidu.com')) {
         req.abort();
       } else {
         req.continue();
@@ -34,12 +33,12 @@ export async function visitWebPage({
     await page.setViewport({ width: 1280, height: 800 });
 
     console.log(`Navigating to ${url}`);
-    await page.goto(url, { waitUntil: 'load' });
+    await page.goto(url, { waitUntil: "networkidle2" });
     if (autoInteract) {
       console.log("Handling page interactions...");
       await handlePageInteractions(page!);
     }
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const htmlContent = await page!.evaluate(() => document.body.innerHTML);
     console.log(`htmlContent: ${htmlContent}`);
@@ -48,7 +47,8 @@ export async function visitWebPage({
     console.log(`Successfully scraped and converted: ${url}`);
     return { data: markdown };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    const message =
+      error instanceof Error ? error.message : "An unknown error occurred";
     console.error(`Error scraping ${url}:`, message);
     return { error: { message } };
   } finally {

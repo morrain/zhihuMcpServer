@@ -1,6 +1,6 @@
 import { getBrowser } from "../utils/browser-manager.js";
-import { setCookiesOnPage } from '../utils/cookie-manager.js';
-import { Page } from 'puppeteer';
+import { setCookiesOnPage } from "../utils/cookie-manager.js";
+import { Page } from "puppeteer";
 
 interface PublishAnswerParams {
   url: string;
@@ -16,20 +16,26 @@ export async function publishAnswer({
     const browser = await getBrowser();
     page = await browser.newPage();
 
-    // await page.setRequestInterception(true);
-    // page.on('request', (req) => {
-    //   if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) {
-    //     req.abort();
-    //   } else {
-    //     req.continue();
-    //   }
-    // });
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+      if (
+        req.url().includes("unpkg.zhimg.com") ||
+        req.url().includes("collector/web_json") ||
+        req.url().includes("sc-critical?") ||
+        req.url().includes("baidu.com/hm.gif") ||
+        req.url().includes("picx.zhimg.com")
+      ) {
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
 
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
     console.log(`Navigating to answer page: ${url}`);
     await page.goto(url, { waitUntil: "load" });
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     // Wait for the editor to be ready and type the answer
     const editorSelector = ".public-DraftEditor-content";
     await page.waitForSelector(editorSelector);
@@ -59,4 +65,3 @@ export async function publishAnswer({
     }
   }
 }
-

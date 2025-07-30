@@ -74,7 +74,7 @@ export function registerTools(server: McpServer): void {
     "get-hot-question",
     "获取热点问题, get hot question",
     {
-      url: z.string().url().describe("The Page URL to find the hot question on"),
+      url: z.string().url().optional().default('https://www.zhihu.com/creator/hot-question/hot/0/day').describe("The Page URL to find the hot question on"),
     },
     async ({ url }, _extra) => {
       console.log(`Received get-hot-question request for URL: ${url}`);

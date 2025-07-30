@@ -62,7 +62,16 @@ async function getLoginQrCode(qrSelector: string = '.Qrcode-qrcode', switchQrSel
             throw new Error('Could not get browser instance.');
         }
         const page = await browser.newPage();
-        await page.goto('https://www.zhihu.com/signin', { waitUntil: 'networkidle2' });
+
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            if (['image', 'font', 'media'].includes(req.resourceType()) || req.url().includes('unpkg.zhimg.com')) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
+        await page.goto('https://www.zhihu.com/signin', { waitUntil: 'networkidle2', timeout: 60000 });
 
         if (switchQrSelector) {
             await switchToQrCodeLogin(page, switchQrSelector, qrSelector);

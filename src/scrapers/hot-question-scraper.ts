@@ -12,7 +12,7 @@ interface HotQuestionResult {
   };
 }
 
-export async function getHotQuestion({ url }: { url: string }): Promise<HotQuestionResult> {
+export async function getHotQuestion({ url = 'https://www.zhihu.com/creator/hot-question/hot/0/day' }: { url?: string } = {}): Promise<HotQuestionResult> {
   let page: Page | null = null;
   try {
     const browser = await getBrowser();
@@ -20,7 +20,7 @@ export async function getHotQuestion({ url }: { url: string }): Promise<HotQuest
 
     await page.setRequestInterception(true);
     page.on('request', (req) => {
-      if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) {
+      if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType()) || req.url().includes('unpkg.zhimg.com')) {
         req.abort();
       } else {
         req.continue();
