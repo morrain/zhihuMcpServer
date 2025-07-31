@@ -1,0 +1,10 @@
+{
+    "mcpServers": {
+        "zhihu-mcp-server": {
+            "command": "node",
+            "args": [
+                "build/index.js"
+            ]
+        }
+    }
+}
