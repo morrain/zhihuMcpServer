@@ -14,7 +14,32 @@ async function launchBrowser(): Promise<Browser> {
   console.log('Launching new browser instance...');
   const browser = await puppeteer.launch({
     headless: process.env.DISABLE_HEADLESS !== 'true',
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-gpu',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-extensions',
+      '--disable-popup-blocking',
+      '--mute-audio',
+      '--disable-background-networking',
+      '--disable-background-timer-throttling',
+      '--disable-breakpad',
+      '--disable-client-side-phishing-detection',
+      '--disable-component-update',
+      '--disable-default-apps',
+      '--disable-hang-monitor',
+      '--disable-ipc-flooding-protection',
+      '--disable-notifications',
+      '--disable-sync',
+      '--disable-translate',
+      '--metrics-recording-only',
+      '--no-default-browser-check',
+      '--safebrowsing-disable-auto-update',
+    ],
   });
   console.log('Browser instance launched successfully.');
   return browser;

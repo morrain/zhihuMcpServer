@@ -122,7 +122,7 @@ export function registerTools(server: McpServer): void {
           return createErrorResponse(result.error);
         }
 
-        return createSuccessResponse("Answer published successfully.");
+        return createSuccessResponse("答案发布成功.");
       } catch (error: any) {
         console.error("Error processing 'publish-answer' tool:", error);
         return createErrorResponse(`Error publishing answer: ${error.message}`);
