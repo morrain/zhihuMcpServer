@@ -4,6 +4,8 @@ import { visitWebPage } from '../scrapers/webpage-scraper.js';
 import { getHotQuestion } from '../scrapers/hot-question-scraper.js';
 import { publishAnswer } from '../scrapers/answer-publisher.js';
 import { getLoginQrCode } from '../scrapers/login-scraper.js';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 /**
  * Registers MCP tools with the server
@@ -26,6 +28,22 @@ export function registerTools(server: McpServer): void {
       } catch (error: any) {
         console.error("Error processing 'login-with-qrcode' tool:", error);
         return createErrorResponse(`Error getting login QR code: ${error.message}`);
+      }
+    }
+  );
+
+  server.tool(
+    "get-login-status",
+    "获取登录状态，登陆完成返回1,没有登陆完成返回0",
+    {},
+    async (_, _extra) => {
+      console.log(`Received get-login-status request`);
+      const cookiesPath = path.join(process.cwd(), 'qrcodes', 'cookies.json');
+      try {
+        await fs.access(cookiesPath);
+        return createSuccessResponse("1", "User is considered logged in.");
+      } catch (error) {
+        return createSuccessResponse("0", "User is not logged in.");
       }
     }
   );
