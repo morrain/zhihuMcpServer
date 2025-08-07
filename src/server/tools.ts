@@ -49,6 +49,26 @@ export function registerTools(server: McpServer): void {
   );
 
   server.tool(
+    "logout",
+    "退出登录，清理掉本地的cookie信息。",
+    {},
+    async (_, _extra) => {
+      console.log(`Received logout request`);
+      const cookiesPath = path.join(process.cwd(), 'qrcodes', 'cookies.json');
+      try {
+        await fs.unlink(cookiesPath);
+        return createSuccessResponse("Logout successful.", "User has been logged out.");
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          return createSuccessResponse("Already logged out.", "No user was logged in.");
+        }
+        console.error("Error processing 'logout' tool:", error);
+        return createErrorResponse(`Error logging out: ${error.message}`);
+      }
+    }
+  );
+
+  server.tool(
     "scrape-webpage",
     "访问页面，提取页面内容并转化为 markdown 格式。",
     {
