@@ -43,6 +43,41 @@ export async function publishAnswer({
     await page.click(editorSelector);
     await page.keyboard.type(answer, { delay: 30 });
 
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Select "AI-assisted creation" declaration
+    try {
+      console.log("Opening declaration dropdown...");
+      const dropdownXPath =
+        "xpath/" + "//label[contains(., '创作声明')]/following-sibling::div//button";
+      const dropdownButton = await page.waitForSelector(dropdownXPath, {
+        timeout: 5000,
+      });
+      if (dropdownButton) {
+        await dropdownButton.click();
+        await new Promise((resolve) => setTimeout(resolve, 500)); // wait for dropdown to open
+
+        console.log("Selecting 'AI-assisted creation' option...");
+        const optionXPath = "xpath/" + "//button[contains(., '包含AI辅助创作')]";
+        const optionButton = await page.waitForSelector(optionXPath, {
+          timeout: 5000,
+        });
+
+        if (optionButton) {
+          await optionButton.click();
+          await new Promise((resolve) => setTimeout(resolve, 500)); // wait for selection to register
+        } else {
+          console.warn(
+            "AI-assisted creation option not found. Proceeding without it."
+          );
+        }
+      }
+    } catch (e) {
+      console.warn(
+        "Could not select 'AI-assisted creation' declaration. Proceeding without it."
+      );
+    }
+
     // Find and click the publish button
     const buttonSelector = ".is-bottom button.Button--primary";
     const publishButton = await page.waitForSelector(buttonSelector);
