@@ -149,12 +149,13 @@ export function registerTools(server: McpServer): void {
     {
       url: z.string().url().describe("发布回答对应的页面地址。"),
       answer: z.string().describe("回答的内容。"),
+      isAi: z.boolean().optional().default(true).describe("是否为AI生成的内容，默认为true。如果为true，则会自动选择创作声明。"),
     },
-    async ({ url, answer }, _extra) => {
+    async ({ url, answer, isAi }, _extra) => {
       console.log(`Received publish-answer request for URL: ${url}`);
 
       try {
-        const result = await publishAnswer({ url, answer });
+        const result = await publishAnswer({ url, answer, isAi });
 
         if (result.error) {
           return createErrorResponse(result.error);

@@ -5,11 +5,13 @@ import { Page } from "puppeteer";
 interface PublishAnswerParams {
   url: string;
   answer: string;
+  isAi?: boolean;
 }
 
 export async function publishAnswer({
   url,
   answer,
+  isAi = true,
 }: PublishAnswerParams): Promise<{ success: boolean; error?: string }> {
   let page: Page | null = null;
   try {
@@ -42,6 +44,58 @@ export async function publishAnswer({
     await page.waitForSelector(editorSelector);
     await page.click(editorSelector);
     await page.keyboard.type(answer, { delay: 30 });
+
+    // Select creation type declaration
+    if (isAi) {
+      try {
+        console.log('Selecting creation type...');
+
+        const declarationButtonXPath = "//button[contains(., '无声明')]";
+        await page.waitForFunction(
+          (xpath) => document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue,
+          { timeout: 5000 },
+          declarationButtonXPath
+        );
+        
+        await page.evaluate((xpath) => {
+            const button = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
+            if (button) {
+                button.click();
+            } else {
+                throw new Error('Declaration button not found in evaluate.');
+            }
+        }, declarationButtonXPath);
+
+
+        // Click the 'AI-assisted' option.
+        const aiOptionXPath = "//div[@role='listbox']//button[contains(., '包含 AI 辅助创作')]";
+        await page.waitForFunction(
+          (xpath) => document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue,
+          { timeout: 5000 },
+          aiOptionXPath
+        );
+
+        await page.evaluate((xpath) => {
+            const button = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
+            if (button) {
+                button.click();
+            } else {
+                throw new Error("'AI-assisted creation' option not found in evaluate.");
+            }
+        }, aiOptionXPath);
+
+        // Wait for the dropdown to disappear to confirm selection.
+        await page.waitForFunction(
+          (xpath) => !document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue,
+          { timeout: 5000 },
+          aiOptionXPath
+        );
+        
+        console.log('Successfully selected creation type.');
+      } catch (e: any) {
+        throw new Error(`Failed to select creation type: ${e.message}`);
+      }
+    }
 
     // Find and click the publish button
     const buttonSelector = ".is-bottom button.Button--primary";
