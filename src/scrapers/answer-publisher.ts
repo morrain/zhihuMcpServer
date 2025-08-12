@@ -37,7 +37,7 @@ export async function publishAnswer({
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
     console.log(`Navigating to answer page: ${url}`);
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+    await page.goto(url, { waitUntil: "load", timeout: 60000 });
     console.log("Page navigation successful.");
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
