@@ -51,45 +51,22 @@ export async function publishAnswer({
         console.log('Selecting creation type...');
 
         const declarationButtonXPath = "//button[contains(., '无声明')]";
-        await page.waitForFunction(
-          (xpath) => document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue,
-          { timeout: 5000 },
-          declarationButtonXPath
-        );
-        
-        await page.evaluate((xpath) => {
-            const button = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
-            if (button) {
-                button.click();
-            } else {
-                throw new Error('Declaration button not found in evaluate.');
-            }
-        }, declarationButtonXPath);
-
+        const declarationButton = await page.waitForSelector(`xpath/${declarationButtonXPath}`, { timeout: 10000 });
+        if (!declarationButton) {
+            throw new Error('Declaration button not found.');
+        }
+        await declarationButton.click();
 
         // Click the 'AI-assisted' option.
         const aiOptionXPath = "//div[@role='listbox']//button[contains(., '包含 AI 辅助创作')]";
-        await page.waitForFunction(
-          (xpath) => document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue,
-          { timeout: 5000 },
-          aiOptionXPath
-        );
-
-        await page.evaluate((xpath) => {
-            const button = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
-            if (button) {
-                button.click();
-            } else {
-                throw new Error("'AI-assisted creation' option not found in evaluate.");
-            }
-        }, aiOptionXPath);
+        const aiOptionButton = await page.waitForSelector(`xpath/${aiOptionXPath}`, { timeout: 10000 });
+        if (!aiOptionButton) {
+            throw new Error("'AI-assisted creation' option not found.");
+        }
+        await aiOptionButton.click();
 
         // Wait for the dropdown to disappear to confirm selection.
-        await page.waitForFunction(
-          (xpath) => !document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue,
-          { timeout: 5000 },
-          aiOptionXPath
-        );
+        await page.waitForSelector(`xpath/${aiOptionXPath}`, { hidden: true, timeout: 5000 });
         
         console.log('Successfully selected creation type.');
       } catch (e: any) {
