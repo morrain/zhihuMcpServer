@@ -37,13 +37,18 @@ export async function publishAnswer({
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
     console.log(`Navigating to answer page: ${url}`);
-    await page.goto(url, { waitUntil: "load", timeout: 60000 });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+    console.log("Page navigation successful.");
+
     await new Promise((resolve) => setTimeout(resolve, 3000));
-    // Wait for the editor to be ready and type the answer
+    
+    console.log("Waiting for editor to appear...");
     const editorSelector = ".public-DraftEditor-content";
     await page.waitForSelector(editorSelector);
+    console.log("Editor found. Clicking and typing answer...");
     await page.click(editorSelector);
     await page.keyboard.type(answer, { delay: 30 });
+    console.log("Answer successfully typed.");
 
     // Select creation type declaration
     if (isAi) {
@@ -51,21 +56,26 @@ export async function publishAnswer({
         console.log('Selecting creation type...');
 
         const declarationButtonXPath = "//button[contains(., '无声明')]";
+        console.log("Waiting for declaration button...");
         const declarationButton = await page.waitForSelector(`xpath/${declarationButtonXPath}`, { timeout: 10000 });
         if (!declarationButton) {
             throw new Error('Declaration button not found.');
         }
+        console.log("Declaration button found. Clicking...");
         await declarationButton.click();
 
         // Click the 'AI-assisted' option.
         const aiOptionXPath = "//div[@role='listbox']//button[contains(., '包含 AI 辅助创作')]";
+        console.log("Waiting for AI-assisted creation option...");
         const aiOptionButton = await page.waitForSelector(`xpath/${aiOptionXPath}`, { timeout: 10000 });
         if (!aiOptionButton) {
             throw new Error("'AI-assisted creation' option not found.");
         }
+        console.log("AI-assisted creation option found. Clicking...");
         await aiOptionButton.click();
 
         // Wait for the dropdown to disappear to confirm selection.
+        console.log("Waiting for dropdown to disappear...");
         await page.waitForSelector(`xpath/${aiOptionXPath}`, { hidden: true, timeout: 5000 });
         
         console.log('Successfully selected creation type.');
@@ -75,17 +85,21 @@ export async function publishAnswer({
     }
 
     // Find and click the publish button
+    console.log("Finding publish button...");
     const buttonSelector = ".is-bottom button.Button--primary";
     const publishButton = await page.waitForSelector(buttonSelector);
 
     if (publishButton) {
+      console.log("Publish button found. Clicking...");
       await publishButton.click();
     } else {
       throw new Error("Publish button not found");
     }
 
     // Wait for navigation to complete after publishing
+    console.log("Waiting for navigation after publish...");
     await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+    console.log("Navigation after publish successful.");
 
     return { success: true };
   } catch (error: any) {
