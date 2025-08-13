@@ -27,6 +27,8 @@ export async function publishAnswer({
         req.url().includes("collector/web_json") ||
         req.url().includes("sc-critical?") ||
         req.url().includes("baidu.com/hm.gif") ||
+        req.url().includes("datahub.zhihu.com/collector/zlab ") ||
+        req.url().includes("zz.bdstatic.com/linksubmit/push.js  ") ||
         req.url().includes("linksubmit/push.js") ||
         req.url().includes("picx.zhimg.com")
       ) {
@@ -83,8 +85,6 @@ export async function publishAnswer({
           console.log("AI-assisted creation option found. Clicking...");
           await aiOptionButton.click();
           
-          console.log("Waiting for dropdown to disappear...");
-          await page.waitForSelector(`xpath/${aiOptionXPath}`, { hidden: true, timeout: 5000 });
           console.log("Successfully selected 'AI-assisted creation'.");
 
         } else if (buttonText && buttonText.includes('包含 AI 辅助创作')) {
