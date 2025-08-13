@@ -33,6 +33,6 @@ export function attachPageLogger(page: Page): void {
       logError(`[Page Error] !! Page Error: ${err.toString()}`);
     })
     .on('pageerror', (pageErr) => {
-      logError(`[Page Error] !! Uncaught Exception in Page: ${pageErr.message}`);
+      logError(`[Page Error] !! Uncaught Exception in Page: ${pageErr && pageErr.message}`);
     });
 }
