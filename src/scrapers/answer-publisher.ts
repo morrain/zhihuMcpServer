@@ -20,21 +20,21 @@ export async function publishAnswer({
     page = await browser.newPage();
     attachPageLogger(page);
 
-    // await page.setRequestInterception(true);
-    // page.on("request", (req) => {
-    //   if (
-    //     req.url().includes("unpkg.zhimg.com") ||
-    //     req.url().includes("collector/web_json") ||
-    //     req.url().includes("sc-critical?") ||
-    //     req.url().includes("baidu.com/hm.gif") ||
-    //     req.url().includes("linksubmit/push.js") ||
-    //     req.url().includes("picx.zhimg.com")
-    //   ) {
-    //     req.abort();
-    //   } else {
-    //     req.continue();
-    //   }
-    // });
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+      if (
+        req.url().includes("unpkg.zhimg.com") ||
+        req.url().includes("collector/web_json") ||
+        req.url().includes("sc-critical?") ||
+        req.url().includes("baidu.com/hm.gif") ||
+        req.url().includes("linksubmit/push.js") ||
+        req.url().includes("picx.zhimg.com")
+      ) {
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
 
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
