@@ -31,9 +31,7 @@ export async function publishAnswer({
         url.includes("datahub.zhihu.com/collector/zlab") ||
         url.includes("zz.bdstatic.com/linksubmit/push.js") ||
         url.includes("linksubmit/push.js") ||
-        url.includes("picx.zhimg.com") ||
-        url.includes("sc-profiler") || // Added to block profiler requests
-        url.includes("apm.zhihu.com") // Added to block APM requests
+        url.includes("picx.zhimg.com") 
       ) {
         req.abort();
       } else {
