@@ -46,7 +46,7 @@ export async function publishAnswer({
     
     console.log("Waiting for editor to appear...");
     const editorSelector = ".public-DraftEditor-content";
-    await page.waitForSelector(editorSelector);
+    await page.waitForSelector(editorSelector, { timeout: 60000 });
     console.log("Editor found. Clicking and typing answer...");
     await page.click(editorSelector);
     await page.keyboard.type(answer, { delay: 30 });
