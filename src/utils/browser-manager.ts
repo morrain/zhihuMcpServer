@@ -13,8 +13,8 @@ let browserInstance: Promise<Browser> | null = null;
 
 async function launchBrowser(): Promise<Browser> {
   console.log('Launching new browser instance...');
-  const userDataDir = path.resolve(process.cwd(), './cache/puppeteer_user_data');
-  console.log(`Using user data directory: ${userDataDir}`);
+  // const userDataDir = path.resolve(process.cwd(), './cache/puppeteer_user_data');
+  // console.log(`Using user data directory: ${userDataDir}`);
   const browser = await puppeteer.launch({
     headless: process.env.DISABLE_HEADLESS !== 'true',
     args: [
@@ -43,7 +43,7 @@ async function launchBrowser(): Promise<Browser> {
       '--no-default-browser-check',
       '--safebrowsing-disable-auto-update',
     ],
-    userDataDir: userDataDir,
+    // userDataDir: userDataDir,
   });
   console.log('Browser instance launched successfully.');
   return browser;
