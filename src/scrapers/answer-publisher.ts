@@ -39,7 +39,7 @@ export async function publishAnswer({
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
     console.log(`Navigating to answer page: ${url}`);
-    await page.goto(url, { waitUntil: "load", timeout: 60000 });
+    await page.goto(url, { waitUntil: "load", timeout: 600000 });
     console.log("Page navigation successful.");
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -70,6 +70,7 @@ export async function publishAnswer({
         if (buttonText && buttonText.includes('无声明')) {
           console.log("Declaration is '无声明', proceeding to select AI-assisted.");
           await declarationButton.click();
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for animation
 
           const aiOptionXPath = "//div[@role='listbox']//button[contains(., '包含 AI 辅助创作')]";
           console.log("Waiting for AI-assisted creation option...");
