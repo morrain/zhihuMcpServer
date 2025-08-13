@@ -22,15 +22,18 @@ export async function publishAnswer({
 
     await page.setRequestInterception(true);
     page.on("request", (req) => {
+      const url = req.url();
       if (
-        req.url().includes("unpkg.zhimg.com") ||
-        req.url().includes("collector/web_json") ||
-        req.url().includes("sc-critical?") ||
-        req.url().includes("baidu.com/hm.gif") ||
-        req.url().includes("datahub.zhihu.com/collector/zlab ") ||
-        req.url().includes("zz.bdstatic.com/linksubmit/push.js  ") ||
-        req.url().includes("linksubmit/push.js") ||
-        req.url().includes("picx.zhimg.com")
+        url.includes("unpkg.zhimg.com") ||
+        url.includes("collector/web_json") ||
+        url.includes("sc-critical?") ||
+        url.includes("baidu.com/hm.gif") ||
+        url.includes("datahub.zhihu.com/collector/zlab") ||
+        url.includes("zz.bdstatic.com/linksubmit/push.js") ||
+        url.includes("linksubmit/push.js") ||
+        url.includes("picx.zhimg.com") ||
+        url.includes("sc-profiler") || // Added to block profiler requests
+        url.includes("apm.zhihu.com") // Added to block APM requests
       ) {
         req.abort();
       } else {
@@ -49,9 +52,22 @@ export async function publishAnswer({
     console.log("Waiting for editor to appear...");
     const editorSelector = ".public-DraftEditor-content";
     await page.waitForSelector(editorSelector, { timeout: 60000 });
-    console.log("Editor found. Clicking and typing answer...");
+    console.log("Editor found. Injecting answer directly...");
     await page.click(editorSelector);
-    await page.keyboard.type(answer, { delay: 30 });
+    // Use page.evaluate to paste the text directly for speed.
+    await page.evaluate((text) => {
+      const editor = document.querySelector('.public-DraftEditor-content');
+      if (editor) {
+        // This is a more robust way to insert text into a contenteditable div
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/plain', text);
+        editor.dispatchEvent(new ClipboardEvent('paste', {
+          clipboardData: dataTransfer,
+          bubbles: true,
+          cancelable: true
+        }));
+      }
+    }, answer);
     console.log("Answer successfully typed.");
 
     // Select creation type declaration
@@ -109,10 +125,6 @@ export async function publishAnswer({
       throw new Error("Publish button not found");
     }
 
-    // Wait for navigation to complete after publishing
-    console.log("Waiting for navigation after publish...");
-    await page.waitForNavigation({ waitUntil: "domcontentloaded" });
-    console.log("Navigation after publish successful.");
 
     return { success: true };
   } catch (error: any) {
