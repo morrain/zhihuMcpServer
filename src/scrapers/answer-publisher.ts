@@ -20,24 +20,24 @@ export async function publishAnswer({
     page = await browser.newPage();
     attachPageLogger(page);
 
-    await page.setRequestInterception(true);
-    page.on("request", (req) => {
-      const url = req.url();
-      if (
-        url.includes("unpkg.zhimg.com") ||
-        url.includes("collector/web_json") ||
-        url.includes("sc-critical?") ||
-        url.includes("baidu.com/hm.gif") ||
-        url.includes("datahub.zhihu.com/collector/zlab") ||
-        url.includes("zz.bdstatic.com/linksubmit/push.js") ||
-        url.includes("linksubmit/push.js") ||
-        url.includes("picx.zhimg.com") 
-      ) {
-        req.abort();
-      } else {
-        req.continue();
-      }
-    });
+    // await page.setRequestInterception(true);
+    // page.on("request", (req) => {
+    //   const url = req.url();
+    //   if (
+    //     url.includes("unpkg.zhimg.com") ||
+    //     url.includes("collector/web_json") ||
+    //     url.includes("sc-critical?") ||
+    //     url.includes("baidu.com/hm.gif") ||
+    //     url.includes("datahub.zhihu.com/collector/zlab") ||
+    //     url.includes("zz.bdstatic.com/linksubmit/push.js") ||
+    //     url.includes("linksubmit/push.js") ||
+    //     url.includes("picx.zhimg.com") 
+    //   ) {
+    //     req.abort();
+    //   } else {
+    //     req.continue();
+    //   }
+    // });
 
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
