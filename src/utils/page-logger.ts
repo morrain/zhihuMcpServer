@@ -18,7 +18,7 @@ export function attachPageLogger(page: Page): void {
     })
     .on('requestfailed', (request) => {
       const failure = request.failure();
-      logError(`[Page Logger] XX Request Failed: ${request.method()} ${request.url()} (Error: ${failure ? failure.errorText : 'Unknown Error'})`);
+      logError(`[Page Error] XX Request Failed: ${request.method()} ${request.url()} (Error: ${failure ? failure.errorText : 'Unknown Error'})`);
     })
     .on('response', (response) => {
       log(`[Page Logger] << Response: ${response.status()} ${response.statusText()} for ${response.url()}`);
@@ -30,9 +30,9 @@ export function attachPageLogger(page: Page): void {
       log('[Page Logger] -- Load event fired --');
     })
     .on('error', (err) => {
-      logError(`[Page Logger] !! Page Error: ${err.toString()}`);
+      logError(`[Page Error] !! Page Error: ${err.toString()}`);
     })
     .on('pageerror', (pageErr) => {
-      logError(`[Page Logger] !! Uncaught Exception in Page: ${pageErr.message}`);
+      logError(`[Page Error] !! Uncaught Exception in Page: ${pageErr.message}`);
     });
 }

@@ -31,5 +31,8 @@ lerna-debug.log*
 .DS_Store
 Thumbs.db
 
+# Cache
+/cache/
+
 # Debugging output
 screenshot-*.png
