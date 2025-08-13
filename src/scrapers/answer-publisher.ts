@@ -7,12 +7,14 @@ interface PublishAnswerParams {
   url: string;
   answer: string;
   isAi?: boolean;
+  fastType?: boolean; // New parameter to control typing speed
 }
 
 export async function publishAnswer({
   url,
   answer,
   isAi = true,
+  fastType = true, // Default to fast typing
 }: PublishAnswerParams): Promise<{ success: boolean; error?: string }> {
   let page: Page | null = null;
   try {
@@ -20,29 +22,31 @@ export async function publishAnswer({
     page = await browser.newPage();
     attachPageLogger(page);
 
-    // await page.setRequestInterception(true);
-    // page.on("request", (req) => {
-    //   const url = req.url();
-    //   if (
-    //     url.includes("unpkg.zhimg.com") ||
-    //     url.includes("collector/web_json") ||
-    //     url.includes("sc-critical?") ||
-    //     url.includes("baidu.com/hm.gif") ||
-    //     url.includes("datahub.zhihu.com/collector/zlab") ||
-    //     url.includes("zz.bdstatic.com/linksubmit/push.js") ||
-    //     url.includes("linksubmit/push.js") ||
-    //     url.includes("picx.zhimg.com") 
-    //   ) {
-    //     req.abort();
-    //   } else {
-    //     req.continue();
-    //   }
-    // });
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+      const url = req.url();
+      if (
+        url.includes("unpkg.zhimg.com") ||
+        url.includes("collector/web_json") ||
+        url.includes("sc-critical?") ||
+        url.includes("baidu.com/hm.gif") ||
+        url.includes("datahub.zhihu.com/collector/zlab") ||
+        url.includes("zz.bdstatic.com/linksubmit/push.js") ||
+        url.includes("linksubmit/push.js") ||
+        url.includes("picx.zhimg.com") ||
+        url.includes("sc-profiler") || // Block profiler requests
+        url.includes("apm.zhihu.com") // Block APM requests
+      ) {
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
 
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
     console.log(`Navigating to answer page: ${url}`);
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 600000 });
+    await page.goto(url, { waitUntil: "load", timeout: 600000 });
     console.log("Page navigation successful.");
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -50,22 +54,26 @@ export async function publishAnswer({
     console.log("Waiting for editor to appear...");
     const editorSelector = ".public-DraftEditor-content";
     await page.waitForSelector(editorSelector, { timeout: 60000 });
-    console.log("Editor found. Injecting answer directly...");
     await page.click(editorSelector);
-    // Use page.evaluate to paste the text directly for speed.
-    await page.evaluate((text) => {
-      const editor = document.querySelector('.public-DraftEditor-content');
-      if (editor) {
-        // This is a more robust way to insert text into a contenteditable div
-        const dataTransfer = new DataTransfer();
-        dataTransfer.setData('text/plain', text);
-        editor.dispatchEvent(new ClipboardEvent('paste', {
-          clipboardData: dataTransfer,
-          bubbles: true,
-          cancelable: true
-        }));
-      }
-    }, answer);
+
+    if (fastType) {
+      console.log("Editor found. Injecting answer directly (fast mode)...");
+      await page.evaluate((text) => {
+        const editor = document.querySelector('.public-DraftEditor-content');
+        if (editor) {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.setData('text/plain', text);
+          editor.dispatchEvent(new ClipboardEvent('paste', {
+            clipboardData: dataTransfer,
+            bubbles: true,
+            cancelable: true
+          }));
+        }
+      }, answer);
+    } else {
+      console.log("Editor found. Typing answer (slow mode)...");
+      await page.keyboard.type(answer, { delay: 30 });
+    }
     console.log("Answer successfully typed.");
 
     // Select creation type declaration
