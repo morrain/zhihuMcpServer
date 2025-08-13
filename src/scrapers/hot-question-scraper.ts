@@ -2,11 +2,13 @@ import { getBrowser } from '../utils/browser-manager.js';
 import { setCookiesOnPage } from '../utils/cookie-manager.js';
 import { Page } from 'puppeteer';
 
+interface HotQuestion {
+  name: string;
+  url: string;
+}
+
 interface HotQuestionResult {
-  data?: {
-    name: string;
-    url: string;
-  };
+  data?: HotQuestion[];
   error?: {
     message: string;
   };
@@ -39,7 +41,7 @@ export async function getHotQuestion({ type = 'day' }: { type?: 'hour' | 'day' |
     console.log(`Navigating to hot question page: ${url}`);
     await page.goto(url, { waitUntil: 'networkidle2' });
 
-    const questionData = await page.evaluate(() => {
+    const questionsData = await page.evaluate(() => {
       // Find all elements containing the text "写回答"
       const writeButtons = Array.from(document.querySelectorAll('button, a')).filter(el => el.textContent?.trim().includes('写回答'));
 
@@ -48,55 +50,55 @@ export async function getHotQuestion({ type = 'day' }: { type?: 'hour' | 'day' |
         return null;
       }
 
-      const writeButton = writeButtons[0];
-      if (!writeButton) return null;
+      return writeButtons.map(writeButton => {
+        if (!writeButton) return null;
 
-      // The "写回答" element is often a link or inside a link. Find the closest 'a' tag to get the URL.
-      const writeAnchor = writeButton.closest('a');
-      if (!writeAnchor) {
-        return null; // "写回答" is not inside a link, cannot get URL.
-      }
-      const url = writeAnchor.href;
+        // The "写回答" element is often a link or inside a link. Find the closest 'a' tag to get the URL.
+        const writeAnchor = writeButton.closest('a');
+        if (!writeAnchor) {
+          return null; // "写回答" is not inside a link, cannot get URL.
+        }
+        const url = writeAnchor.href;
 
-      // Traverse up the DOM from the "写回答" button to find a common ancestor
-      // that contains both the button and the question title link.
-      let container = writeButton.parentElement;
-      for (let i = 0; i < 10 && container; i++) {
-        // Look for the question link within the current container.
-        // This link contains "/question/" but not "?write".
-        const questionLink = container.querySelector('a[href*="/question/"]:not([href*="?write"])');
+        // Traverse up the DOM from the "写回答" button to find a common ancestor
+        // that contains both the button and the question title link.
+        let container = writeButton.parentElement;
+        for (let i = 0; i < 10 && container; i++) {
+          // Look for the question link within the current container.
+          // This link contains "/question/" but not "?write".
+          const questionLink = container.querySelector('a[href*="/question/"]:not([href*="?write"])');
 
-        if (questionLink) {
-          // Clone the node to avoid modifying the live DOM.
-          const clone = questionLink.cloneNode(true) as HTMLElement;
+          if (questionLink) {
+            // Clone the node to avoid modifying the live DOM.
+            const clone = questionLink.cloneNode(true) as HTMLElement;
 
-          // The tag is usually a div inside the first div of the link.
-          // We remove it to get only the question text, based on structure, not class.
-          const mainContainer = clone.querySelector('div');
-          if (mainContainer) {
-            const tagElement = mainContainer.querySelector('div');
-            if (tagElement) {
-              tagElement.remove();
+            // The tag is usually a div inside the first div of the link.
+            // We remove it to get only the question text, based on structure, not class.
+            const mainContainer = clone.querySelector('div');
+            if (mainContainer) {
+              const tagElement = mainContainer.querySelector('div');
+              if (tagElement) {
+                tagElement.remove();
+              }
+            }
+
+            const name = clone.textContent?.trim();
+
+            // Check if we found a valid name and URL.
+            if (name && name.length > 5) { // Basic validation for title length
+              return { name, url };
             }
           }
-
-          const name = clone.textContent?.trim();
-
-          // Check if we found a valid name and URL.
-          if (name && name.length > 5) { // Basic validation for title length
-            return { name, url };
-          }
+          container = container.parentElement;
         }
-        container = container.parentElement;
-      }
-
-      return null; // Return null if no matching structure was found
+        return null; // Return null if no matching structure was found
+      }).filter((item): item is { name: string; url: string } => item !== null);
     });
 
 
-    if (questionData) {
-      console.log(`Found hot question: ${questionData.name}`);
-      return { data: questionData };
+    if (questionsData && questionsData.length > 0) {
+      console.log(`Found ${questionsData.length} hot questions.`);
+      return { data: questionsData };
     } else {
       return { error: { message: "No question link found on the page." } };
     }

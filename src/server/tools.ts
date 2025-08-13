@@ -125,10 +125,12 @@ export function registerTools(server: McpServer): void {
         }
 
         if (result.data) {
+          const message = `Successfully retrieved ${result.data.length} hot questions.`;
+          console.log(message);
           return {
             content: [{ type: "text", text: JSON.stringify(result.data) }],
             _meta: {
-              message: "Successfully retrieved hot question",
+              message: message,
               success: true,
             },
             isError: false,
