@@ -18,21 +18,21 @@ export async function publishAnswer({
     const browser = await getBrowser();
     page = await browser.newPage();
 
-    await page.setRequestInterception(true);
-    page.on("request", (req) => {
-      if (
-        req.url().includes("unpkg.zhimg.com") ||
-        req.url().includes("collector/web_json") ||
-        req.url().includes("sc-critical?") ||
-        req.url().includes("baidu.com/hm.gif") ||
-        req.url().includes("linksubmit/push.js") ||
-        req.url().includes("picx.zhimg.com")
-      ) {
-        req.abort();
-      } else {
-        req.continue();
-      }
-    });
+    // await page.setRequestInterception(true);
+    // page.on("request", (req) => {
+    //   if (
+    //     req.url().includes("unpkg.zhimg.com") ||
+    //     req.url().includes("collector/web_json") ||
+    //     req.url().includes("sc-critical?") ||
+    //     req.url().includes("baidu.com/hm.gif") ||
+    //     req.url().includes("linksubmit/push.js") ||
+    //     req.url().includes("picx.zhimg.com")
+    //   ) {
+    //     req.abort();
+    //   } else {
+    //     req.continue();
+    //   }
+    // });
 
     await setCookiesOnPage(page);
     await page.setViewport({ width: 1280, height: 800 });
@@ -53,32 +53,42 @@ export async function publishAnswer({
     // Select creation type declaration
     if (isAi) {
       try {
-        console.log('Selecting creation type...');
+        console.log("Starting strict creation type selection...");
 
-        const declarationButtonXPath = "//button[contains(., '无声明')]";
-        console.log("Waiting for declaration button...");
+        const declarationButtonXPath = "//label[contains(., '创作声明')]/following-sibling::div[1]//button";
         const declarationButton = await page.waitForSelector(`xpath/${declarationButtonXPath}`, { timeout: 10000 });
+
         if (!declarationButton) {
-            throw new Error('Declaration button not found.');
+          throw new Error("Creation declaration button was not found.");
         }
-        console.log("Declaration button found. Clicking...");
-        await declarationButton.click();
 
-        // Click the 'AI-assisted' option.
-        const aiOptionXPath = "//div[@role='listbox']//button[contains(., '包含 AI 辅助创作')]";
-        console.log("Waiting for AI-assisted creation option...");
-        const aiOptionButton = await page.waitForSelector(`xpath/${aiOptionXPath}`, { timeout: 10000 });
-        if (!aiOptionButton) {
-            throw new Error("'AI-assisted creation' option not found.");
+        const buttonText = await declarationButton.evaluate(el => el.textContent);
+        console.log(`Found declaration button with text: "${buttonText}"`);
+
+        if (buttonText && buttonText.includes('无声明')) {
+          console.log("Declaration is '无声明', proceeding to select AI-assisted.");
+          await declarationButton.click();
+
+          const aiOptionXPath = "//div[@role='listbox']//button[contains(., '包含 AI 辅助创作')]";
+          console.log("Waiting for AI-assisted creation option...");
+          const aiOptionButton = await page.waitForSelector(`xpath/${aiOptionXPath}`, { timeout: 10000 });
+
+          if (!aiOptionButton) {
+            throw new Error("'AI-assisted creation' option not found in dropdown.");
+          }
+          
+          console.log("AI-assisted creation option found. Clicking...");
+          await aiOptionButton.click();
+          
+          console.log("Waiting for dropdown to disappear...");
+          await page.waitForSelector(`xpath/${aiOptionXPath}`, { hidden: true, timeout: 5000 });
+          console.log("Successfully selected 'AI-assisted creation'.");
+
+        } else if (buttonText && buttonText.includes('包含 AI 辅助创作')) {
+          console.log("Creation type is already set to 'AI-assisted creation'. No action needed.");
+        } else {
+          throw new Error(`Declaration button has unexpected text: "${buttonText}".`);
         }
-        console.log("AI-assisted creation option found. Clicking...");
-        await aiOptionButton.click();
-
-        // Wait for the dropdown to disappear to confirm selection.
-        console.log("Waiting for dropdown to disappear...");
-        await page.waitForSelector(`xpath/${aiOptionXPath}`, { hidden: true, timeout: 5000 });
-        
-        console.log('Successfully selected creation type.');
       } catch (e: any) {
         throw new Error(`Failed to select creation type: ${e.message}`);
       }
