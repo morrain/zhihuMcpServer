@@ -7,8 +7,8 @@ import { Page } from 'puppeteer';
  * @param page The Puppeteer Page object to attach the logger to.
  */
 export function attachPageLogger(page: Page): void {
-  const log = (message: string) => console.log(`${new Date().toISOString()} ${message}`);
-  const logError = (message: string) => console.error(`${new Date().toISOString()} ${message}`);
+  const log = (message: string) => console.log(`${new Date().toLocaleString()} ${message}`);
+  const logError = (message: string) => console.error(`${new Date().toLocaleString()} ${message}`);
 
   log(`[Page Logger] Attaching logger to page: ${page.url()}`);
 
