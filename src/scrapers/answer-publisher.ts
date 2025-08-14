@@ -1,7 +1,7 @@
 import { getBrowser } from "../utils/browser-manager.js";
 import { setCookiesOnPage } from "../utils/cookie-manager.js";
 import { Page } from "puppeteer";
-import { attachPageLogger } from "../utils/page-logger.js";
+// import { attachPageLogger } from "../utils/page-logger.js";
 
 interface PublishAnswerParams {
   url: string;
@@ -20,7 +20,7 @@ export async function publishAnswer({
   try {
     const browser = await getBrowser();
     page = await browser.newPage();
-    attachPageLogger(page);
+    // attachPageLogger(page);
 
     await page.setRequestInterception(true);
     page.on("request", (req) => {
